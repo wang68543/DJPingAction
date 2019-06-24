@@ -159,7 +159,7 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
 
 - (void)didFailWithError:(NSError *)error {
     id<DJSimplePingDelegate>  strongDelegate;
-    
+    //TODO: 测试fork
     assert(error != nil);
     
     // We retain ourselves temporarily because it's common for the delegate method 
