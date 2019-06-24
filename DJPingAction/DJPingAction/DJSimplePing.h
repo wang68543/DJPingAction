@@ -132,6 +132,8 @@ typedef NS_ENUM(NSInteger, DJSimplePingAddressStyle) {
 
 - (void)stop;
 
+- (void)testFunc;
+
 @end
 
 /*! A delegate protocol for the SimplePing class.

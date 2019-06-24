@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 #import "DJPingAction.h"
+#import "DJPingAction/DJSimplePing.h"
+#import <objc/runtime.h>
 @interface AppDelegate ()
 
 @end
@@ -17,6 +19,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+//    DJSimplePing *obj = [[DJSimplePing alloc] initWithHostName:@"www.baidu.com"];
+//    size_t insSize = class_getInstanceSize([NSObject class]);
+//    NSLog(@"NSObject Size:%zd",insSize);
+//    [obj testFunc];
     return YES;
 }
 
