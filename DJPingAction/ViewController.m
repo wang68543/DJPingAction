@@ -27,6 +27,7 @@
 
 - (IBAction)clickPingButton:(id)sender {
     NSString * host = self.hostTextFiled.text;
+    host = @"https://sgv-netcon.wifi8.com/api";
     NSTimeInterval timOutLimit = 0.5f;
     [DJPingAction startWithHost:host
                    timeOutLimit:timOutLimit

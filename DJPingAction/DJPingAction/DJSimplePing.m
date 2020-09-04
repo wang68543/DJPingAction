@@ -565,7 +565,7 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
     DJSimplePing * obj = (__bridge DJSimplePing *) info;
     if (obj == nil || [obj isKindOfClass:[DJSimplePing class]]) {
         return;
-    } 
+    }
     #pragma unused(s)
     assert(s == obj.socket);
     #pragma unused(type)
@@ -710,16 +710,13 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
 static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, const CFStreamError *error, void *info) {
     // This C routine is called by CFHost when the host resolution is complete. 
     // It just redirects the call to the appropriate Objective-C method.
-    if (info == NULL) {
+    if (info == NULL || typeInfo != kCFHostAddresses) {
         return;
     }
-    DJSimplePing *    obj;
-
-    obj = (__bridge DJSimplePing *) info;
+    DJSimplePing *obj = (__bridge DJSimplePing *) info;
     if (obj == nil || ![obj isKindOfClass:[DJSimplePing class]]) {
         return;
     }
-    assert([obj isKindOfClass:[DJSimplePing class]]);
     
     #pragma unused(theHost)
     assert(theHost == obj.host);
@@ -771,7 +768,9 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
 
 - (void)stopSocket {
     if (self.socket != NULL) {
-        CFSocketInvalidate(self.socket);
+        if (CFSocketIsValid(self.socket)) {
+           CFSocketInvalidate(self.socket);
+        }
         self.socket = NULL;
     }
 }
