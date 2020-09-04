@@ -19,10 +19,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-//    DJSimplePing *obj = [[DJSimplePing alloc] initWithHostName:@"www.baidu.com"];
-//    size_t insSize = class_getInstanceSize([NSObject class]);
-//    NSLog(@"NSObject Size:%zd",insSize);
-//    [obj testFunc];
+    DJSimplePing *obj = [[DJSimplePing alloc] initWithHostName:@"www.baidu.com"];
+    size_t insSize = class_getInstanceSize([NSObject class]);
+    NSLog(@"NSObject Size:%zd",insSize);
+    [obj testFunc];
     return YES;
 }
 

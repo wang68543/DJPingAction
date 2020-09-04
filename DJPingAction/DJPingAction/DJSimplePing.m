@@ -557,16 +557,15 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
  */
 
 static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
-    if (info == NULL) {
+    if (info == NULL || type != kCFSocketReadCallBack) {
         return;
     }
     // This C routine is called by CFSocket when there's data waiting on our 
     // ICMP socket.  It just redirects the call to Objective-C code.
-    DJSimplePing *    obj;
-    
-    obj = (__bridge DJSimplePing *) info;
-    assert([obj isKindOfClass:[DJSimplePing class]]);
-    
+    DJSimplePing * obj = (__bridge DJSimplePing *) info;
+    if (obj == nil || [obj isKindOfClass:[DJSimplePing class]]) {
+        return;
+    } 
     #pragma unused(s)
     assert(s == obj.socket);
     #pragma unused(type)
@@ -584,7 +583,6 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
  *      `hostAddress`.  It's responsible for setting up the socket for sending and 
  *      receiving pings.
  */
-
 - (void)startWithHostAddress {
     int                     err;
     int                     fd;
@@ -718,6 +716,9 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
     DJSimplePing *    obj;
 
     obj = (__bridge DJSimplePing *) info;
+    if (obj == nil || ![obj isKindOfClass:[DJSimplePing class]]) {
+        return;
+    }
     assert([obj isKindOfClass:[DJSimplePing class]]);
     
     #pragma unused(theHost)
@@ -791,7 +792,7 @@ static void test() {
     CFSocketCallBackType type;
     CFDataRef address;
     const void *data;
-    void *info;
+    void *info = NULL;
 //    assert(info != NULL);
     DJSimplePing *    obj;
     
