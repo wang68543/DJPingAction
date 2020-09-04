@@ -557,7 +557,7 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
  */
 
 static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
-    if (info == NULL || type != kCFSocketReadCallBack) {
+    if (info == NULL || type != kCFSocketReadCallBack || data == NULL) {
         return;
     }
     // This C routine is called by CFSocket when there's data waiting on our 
