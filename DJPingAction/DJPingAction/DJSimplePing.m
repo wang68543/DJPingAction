@@ -141,6 +141,8 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
     // Double check that -stop took care of _host and _socket.
     assert(self->_host == NULL);
     assert(self->_socket == NULL);
+//    printf("========================销毁了\n");
+    printf("11111111111111111====== Simple Ping dealloc\n");
 }
 
 - (sa_family_t)hostAddressFamily {
@@ -167,7 +169,7 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
     // If we then reference self on the return path, things go badly.  I don't think 
     // that happens currently, but I've got into the habit of doing this as a 
     // defensive measure.
-    
+    printf("-------didFailWithError---------------\n");
     CFAutorelease( CFBridgingRetain( self ));
     
     [self stop];
@@ -556,7 +558,13 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
  *      'owning' object.
  */
 
-static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) {
+static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) { 
+//    Boolean isValid = CFSocketIsValid(s);
+//    if (isValid == false) {
+//        printf("=======SocketReadCallback---失败====\n");
+//        return;
+//    }
+    printf("=======SocketReadCallback====\n");
     if (info == NULL || type != kCFSocketReadCallBack) {
         return;
     }
@@ -576,7 +584,7 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
     assert(data == nil);
     
     [obj readData];
-    CFRelease(info);
+//    CFRelease(info);
 }
 
 /*! Starts the send and receive infrastructure.
@@ -615,14 +623,17 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
     if (err != 0) {
         [self didFailWithError:[NSError errorWithDomain:NSPOSIXErrorDomain code:err userInfo:nil]];
     } else {
-        CFSocketContext         context = {0, (__bridge_retained void *)(self), NULL, NULL, NULL};
+        CFSocketContext         context = {0, (__bridge void *)(self), NULL, NULL, NULL}; //_retained
         CFRunLoopSourceRef      rls;
         id<DJSimplePingDelegate>  strongDelegate;
         
         // Wrap it in a CFSocket and schedule it on the runloop.
         
-        self.socket = (CFSocketRef) CFAutorelease( CFSocketCreateWithNative(NULL, fd, kCFSocketReadCallBack, SocketReadCallback, &context) );
-        assert(self.socket != NULL);
+        CFSocketRef socket = (CFSocketRef) CFAutorelease(CFSocketCreateWithNative(NULL, fd, kCFSocketReadCallBack, SocketReadCallback, &context)) ;//
+        assert(socket != NULL);
+        self.socket = socket;
+//        CFRelease(socket);
+        
         
         // The socket will now take care of cleaning up our file descriptor.
         
@@ -635,7 +646,7 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
         CFRunLoopAddSource(CFRunLoopGetCurrent(), rls, kCFRunLoopDefaultMode);
         
         CFRelease(rls);
-
+        
         strongDelegate = self.delegate;
         if ( (strongDelegate != nil) && [strongDelegate respondsToSelector:@selector(dj_simplePing:didStartWithAddress:)] ) {
             [strongDelegate dj_simplePing:self didStartWithAddress:self.hostAddress];
@@ -711,6 +722,7 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
 static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, const CFStreamError *error, void *info) {
     // This C routine is called by CFHost when the host resolution is complete. 
     // It just redirects the call to the appropriate Objective-C method.
+    printf("=======HostResolveCallback====\n");
     if (info == NULL) {
         return;
     }
@@ -729,18 +741,20 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
     } else {
         [obj hostResolutionDone];
     }
-    CFRelease(info);
+//    if (obj != nil) {
+//        CFRelease(info);
+//    }
 }
 
 - (void)start {
     Boolean             success;
-    CFHostClientContext context = {0, (__bridge_retained void *)(self), NULL, NULL, NULL};
+    CFHostClientContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};//
     CFStreamError       streamError;
     
     assert(self.host == NULL);
     assert(self.hostAddress == nil);
 
-    self.host = (CFHostRef) CFAutorelease( CFHostCreateWithName(NULL, (__bridge CFStringRef) self.hostName) );
+    self.host = (CFHostRef)CFAutorelease(CFHostCreateWithName(NULL, (__bridge CFStringRef) self.hostName)) ;//CFAutorelease(
     assert(self.host != NULL);
     
     CFHostSetClient(self.host, HostResolveCallback, &context);
@@ -778,6 +792,7 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
 }
 
 - (void)stop {
+    printf("11111111111111111======stop\n");
     [self stopHostResolution];
     [self stopSocket];
     
@@ -786,37 +801,4 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
     
     self.hostAddress = NULL;
 }
-
-
-//static void test() {
-//    CFSocketRef s;
-//    CFSocketCallBackType type;
-//    CFDataRef address;
-//    const void *data;
-//    void *info = NULL;
-////    assert(info != NULL);
-//    DJSimplePing *    obj;
-//
-//    if (sizeof(obj) == sizeof(info)) {
-//        NSLog(@"===========");
-//    }
-//
-//    obj = (__bridge DJSimplePing *) info;
-//    assert([obj isKindOfClass:[DJSimplePing class]]);
-//
-//#pragma unused(s)
-//    assert(s == obj.socket);
-//#pragma unused(type)
-//    assert(type == kCFSocketReadCallBack);
-//#pragma unused(address)
-//    assert(address == nil);
-//#pragma unused(data)
-//    assert(data == nil);
-//
-//    [obj readData];
-//}
-//
-//-(void)testFunc {
-//    test();
-//}
 @end

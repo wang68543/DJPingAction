@@ -113,7 +113,13 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     });
     return _networkRequestThread;
 }
-
+- (void)dealloc
+{
+//    [self.simplePing stop];
+//    self.simplePing = nil;
+//    printf("============DJPingAction销毁了\n");
+    printf("11111111111111111======DJPingAction dealloc\n");
+}
 + (void)pingThreadEntryPoint:(id) object {
     @autoreleasepool {
         [[NSThread currentThread] setName:@"com.dengjian.sdk.pingDeteck"];
@@ -124,7 +130,7 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     
 }
 
--(void)startPing{
+-(void)startPing {
     [self changeState:DJPingStateIdle withItem:nil];
 }
 
@@ -134,24 +140,28 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
                       maxCount:(NSTimeInterval)maxCount
                       feedback:(DJPingFeedbackBlock)feedback
                       complete:(DJPingCompleteBlock)complete{
-    
+    printf("11111111111111111*********startWithHost******\n");
     DJPingAction * pingAction = [DJPingAction new];
     pingAction.host = host;
     pingAction.stopWhenReached = stopWhenReached;
     pingAction.maxCount = maxCount;
     pingAction.timeOutLimit = timeOutLimit;
     pingAction.timeDic = [NSMutableDictionary dictionary];
-    pingAction.simplePing = [[DJSimplePing alloc] initWithHostName:host];
-    pingAction.simplePing.delegate = pingAction;
+//    pingAction.simplePing = [[DJSimplePing alloc] initWithHostName:host];
+//    pingAction.simplePing.delegate = pingAction;
     pingAction.feedbackBlock = feedback;
-    if (complete) {
-        pingAction.completeBlock = complete;
-        pingAction.myself = pingAction;
-        
-    }
+//    if (complete) {
+//        pingAction.completeBlock = complete;
+//        pingAction.myself = pingAction;
+//
+//    }
+    dispatch_after(1.0, dispatch_get_main_queue(), ^{
+        if (complete) {
+            complete();
+        }
+    });
     
-    
-    [pingAction performSelector:@selector(startPing) onThread:[[self class] pingThread] withObject:nil waitUntilDone:NO];
+//    [pingAction performSelector:@selector(startPing) onThread:[[self class] pingThread] withObject:nil waitUntilDone:NO];
     
     return pingAction;
 }
@@ -166,7 +176,8 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     pingItem.status = 3;
     pingItem.timeToLive = 0;
     
-    [self.simplePing stop];
+//    [self.simplePing stop];
+    self.simplePing = nil;
     [self changeState:DJPingStateStartedFailure withItem:pingItem];
 }
 
@@ -233,6 +244,9 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     if (item.status == 1 && self.stopWhenReached) {
         if (self.completeBlock) {
             self.completeBlock();
+//            [self.simplePing stop];
+            
+            self.simplePing = nil;
             self.completeBlock = nil;
             self.feedbackBlock = nil;
             self.myself = nil;
@@ -246,6 +260,8 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
             if (self.completeBlock) {
                 self.completeBlock();
                 self.completeBlock = nil;
+//                [self.simplePing stop];
+                self.simplePing = nil;
                 self.feedbackBlock = nil;
                 self.myself = nil;
             }
