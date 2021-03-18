@@ -140,28 +140,22 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
                       maxCount:(NSTimeInterval)maxCount
                       feedback:(DJPingFeedbackBlock)feedback
                       complete:(DJPingCompleteBlock)complete{
-    printf("11111111111111111*********startWithHost******\n");
+//    printf("11111111111111111*********startWithHost******\n");
     DJPingAction * pingAction = [DJPingAction new];
     pingAction.host = host;
     pingAction.stopWhenReached = stopWhenReached;
     pingAction.maxCount = maxCount;
     pingAction.timeOutLimit = timeOutLimit;
     pingAction.timeDic = [NSMutableDictionary dictionary];
-//    pingAction.simplePing = [[DJSimplePing alloc] initWithHostName:host];
-//    pingAction.simplePing.delegate = pingAction;
+    pingAction.simplePing = [[DJSimplePing alloc] initWithHostName:host];
+    pingAction.simplePing.delegate = pingAction;
     pingAction.feedbackBlock = feedback;
-//    if (complete) {
-//        pingAction.completeBlock = complete;
-//        pingAction.myself = pingAction;
-//
-//    }
-    dispatch_after(1.0, dispatch_get_main_queue(), ^{
-        if (complete) {
-            complete();
-        }
-    });
-    
-//    [pingAction performSelector:@selector(startPing) onThread:[[self class] pingThread] withObject:nil waitUntilDone:NO];
+    if (complete) {
+        pingAction.completeBlock = complete;
+        pingAction.myself = pingAction;
+
+    }
+    [pingAction performSelector:@selector(startPing) onThread:[[self class] pingThread] withObject:nil waitUntilDone:NO];
     
     return pingAction;
 }
@@ -176,8 +170,7 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     pingItem.status = 3;
     pingItem.timeToLive = 0;
     
-//    [self.simplePing stop];
-    self.simplePing = nil;
+    [self.simplePing stop];
     [self changeState:DJPingStateStartedFailure withItem:pingItem];
 }
 
@@ -253,6 +246,7 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
         }
     }else {
         if (self.currPingCount < self.maxCount) {
+//            printf("11111111111111111重新开始\n");
             // 没到次数，重试
             [self changeState:state withItem:item];
         }else{
@@ -280,10 +274,8 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     pingItem.timeCost = self.timeOutLimit;
     pingItem.status = 2;
     pingItem.timeToLive = 0;
-    
-//    [self.simplePing stop];
-//    [self changeState:DJPingStateIdle withItem:pingItem];
     [self changeState:DJPingStateReceiveFailure withItem:pingItem];
+    
 }
 
 //---------------------------------------------------------------------------
@@ -303,7 +295,10 @@ typedef void(^DJPingResultBlockWrap)(DJPingCompleteBlock block);
     pingItem.timeCost = self.timeOutLimit;
     pingItem.status = 3;
     pingItem.timeToLive = 0;
-    
+//#if DEBUG
+    self.simplePing = [[DJSimplePing alloc] initWithHostName:self.host];
+    self.simplePing.delegate = self;
+//#endif
     [self changeState:DJPingStateStartedFailure withItem:pingItem];
 
 }

@@ -141,8 +141,7 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
     // Double check that -stop took care of _host and _socket.
     assert(self->_host == NULL);
     assert(self->_socket == NULL);
-//    printf("========================销毁了\n");
-    printf("11111111111111111====== Simple Ping dealloc\n");
+//    printf("11111111111111111====== Simple Ping dealloc\n");
 }
 
 - (sa_family_t)hostAddressFamily {
@@ -169,7 +168,7 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
     // If we then reference self on the return path, things go badly.  I don't think 
     // that happens currently, but I've got into the habit of doing this as a 
     // defensive measure.
-    printf("-------didFailWithError---------------\n");
+//    printf("-------didFailWithError---------------\n");
     CFAutorelease( CFBridgingRetain( self ));
     
     [self stop];
@@ -509,9 +508,6 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
     if (bytesRead < 0) {
         err = errno;
     }
-    
-    // Process the data we read.
-    
     if (bytesRead > 0) {
         NSMutableData *         packet;
         id<DJSimplePingDelegate>  strongDelegate;
@@ -559,13 +555,9 @@ static uint16_t dj_in_cksum(const void *buffer, size_t bufferLen) {
  */
 
 static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataRef address, const void *data, void *info) { 
-//    Boolean isValid = CFSocketIsValid(s);
-//    if (isValid == false) {
-//        printf("=======SocketReadCallback---失败====\n");
-//        return;
-//    }
-    printf("=======SocketReadCallback====\n");
-    if (info == NULL || type != kCFSocketReadCallBack) {
+    Boolean isValid = CFSocketIsValid(s);
+//    printf("=======SocketReadCallback====\n");
+    if (info == NULL || type != kCFSocketReadCallBack || !isValid) {
         return;
     }
     // This C routine is called by CFSocket when there's data waiting on our 
@@ -722,7 +714,7 @@ static void SocketReadCallback(CFSocketRef s, CFSocketCallBackType type, CFDataR
 static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, const CFStreamError *error, void *info) {
     // This C routine is called by CFHost when the host resolution is complete. 
     // It just redirects the call to the appropriate Objective-C method.
-    printf("=======HostResolveCallback====\n");
+//    printf("=======HostResolveCallback====\n");
     if (info == NULL) {
         return;
     }
@@ -741,9 +733,6 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
     } else {
         [obj hostResolutionDone];
     }
-//    if (obj != nil) {
-//        CFRelease(info);
-//    }
 }
 
 - (void)start {
@@ -762,6 +751,8 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
     CFHostScheduleWithRunLoop(self.host, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     
     success = CFHostStartInfoResolution(self.host, kCFHostAddresses, &streamError);
+     
+    
     if ( ! success ) {
         [self didFailWithHostStreamError:streamError];
     }
@@ -792,7 +783,7 @@ static void HostResolveCallback(CFHostRef theHost, CFHostInfoType typeInfo, cons
 }
 
 - (void)stop {
-    printf("11111111111111111======stop\n");
+//    printf("11111111111111111======stop\n");
     [self stopHostResolution];
     [self stopSocket];
     
